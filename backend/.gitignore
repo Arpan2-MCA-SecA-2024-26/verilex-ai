@@ -1,0 +1,12 @@
+venv/
+__pycache__/
+*.pyc
+
+.env
+
+uploads/
+profile_pictures/
+
+security.log
+
+.DS_Store
