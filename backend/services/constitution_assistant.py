@@ -18,13 +18,35 @@ model = genai.GenerativeModel(
     "gemini-2.5-flash"
 )
 
-embedder = SentenceTransformer(
-    "all-MiniLM-L6-v2"
-)
+# embedder = SentenceTransformer(
+#     "all-MiniLM-L6-v2"
+# )
+embedder = None
 
-index = faiss.read_index(
-    "constitution_rag/constitution_index.faiss"
-)
+def get_embedder():
+    global embedder
+
+    if embedder is None:
+        embedder = SentenceTransformer(
+            "all-MiniLM-L6-v2"
+        )
+
+    return embedder
+
+# index = faiss.read_index(
+#     "constitution_rag/constitution_index.faiss"
+# )
+index = None
+
+def get_index():
+    global index
+
+    if index is None:
+        index = faiss.read_index(
+            "constitution_rag/constitution_index.faiss"
+        )
+
+    return index
 
 with open(
     "constitution_rag/constitution_chunks.pkl",
@@ -35,11 +57,12 @@ with open(
 
 def search_constitution(query):
 
-    vector = embedder.encode(
+    vector = get_embedder().encode(
         [query]
     )
 
-    distances, indices = index.search(
+    idx = get_index()
+    distances, indices = idx.search(
         vector.astype("float32"),
         8
     )

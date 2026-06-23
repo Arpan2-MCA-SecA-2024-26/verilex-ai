@@ -26,7 +26,6 @@ from reportlab.platypus import (
     Image
 )
 from reportlab.lib.styles import getSampleStyleSheet
-import matplotlib.pyplot as plt
 import io
 from reportlab.graphics import renderPDF
 from reportlab.pdfgen import canvas
@@ -202,13 +201,29 @@ app.config['MYSQL_CURSORCLASS'] = 'DictCursor'
 
 mysql = MySQL(app)
 
-semantic_model = SentenceTransformer(
-    'all-MiniLM-L6-v2'
-)
+# semantic_model = SentenceTransformer(
+#     'all-MiniLM-L6-v2'
+# )
+semantic_model = None
+def get_semantic_model():
+    global semantic_model
+    if semantic_model is None:
+        semantic_model = SentenceTransformer(
+            'all-MiniLM-L6-v2'
+        )
+    return semantic_model
 
-nlp = spacy.load(
-    "en_core_web_sm"
-)
+# nlp = spacy.load(
+#     "en_core_web_sm"
+# )
+nlp = None
+def get_nlp():
+    global nlp
+    if nlp is None:
+        nlp = spacy.load(
+            "en_core_web_sm"
+        )
+    return nlp
 
 wiki = wikipediaapi.Wikipedia(
     language='en',
@@ -220,11 +235,29 @@ wiki = wikipediaapi.Wikipedia(
 # 📦 LOAD MODELS
 # ============================================
 
-lr_model = joblib.load('models/fake_news/lr_model.pkl')
-tfidf_fake = joblib.load('models/fake_news/tfidf_vectorizer.pkl')
+# lr_model = joblib.load('models/fake_news/lr_model.pkl')
+# tfidf_fake = joblib.load('models/fake_news/tfidf_vectorizer.pkl')
+lr_model = None
+tfidf_fake = None
+def load_fake_news_models():
+    global lr_model
+    global tfidf_fake
+    if lr_model is None:
+        lr_model = joblib.load('models/fake_news/lr_model.pkl')
+    if tfidf_fake is None:
+        tfidf_fake = joblib.load('models/fake_news/tfidf_vectorizer.pkl')
 
-legal_model = joblib.load('models/legal/xgb_model.pkl')
-tfidf_legal = joblib.load('models/legal/tfidf_vectorizer.pkl')
+# legal_model = joblib.load('models/legal/xgb_model.pkl')
+# tfidf_legal = joblib.load('models/legal/tfidf_vectorizer.pkl')
+legal_model = None
+tfidf_legal = None
+def load_legal_models():
+    global legal_model
+    global tfidf_legal
+    if legal_model is None:
+        legal_model = joblib.load('models/legal/xgb_model.pkl')
+    if tfidf_legal is None:
+        tfidf_legal = joblib.load('models/legal/tfidf_vectorizer.pkl')
 
 print("Loading fact verification model...")
 
@@ -256,32 +289,32 @@ def is_valid_mime_type(file):
 
     return mime_type in ALLOWED_MIME_TYPES
 
-def load_constitution_text():
+# def load_constitution_text():
 
-    try:
+#     try:
 
-        reader = PdfReader("constitution.pdf")
+#         reader = PdfReader("constitution.pdf")
 
-        full_text = ""
+#         full_text = ""
 
-        for page in reader.pages:
+#         for page in reader.pages:
 
-            text = page.extract_text()
+#             text = page.extract_text()
 
-            if text:
-                full_text += text + "\n"
+#             if text:
+#                 full_text += text + "\n"
 
-        return full_text
+#         return full_text
 
-    except Exception as e:
+#     except Exception as e:
 
-        print(
-            "Constitution PDF Error:",
-            str(e)
-        )
+#         print(
+#             "Constitution PDF Error:",
+#             str(e)
+#         )
 
-        return ""
-constitution_text = load_constitution_text()
+#         return ""
+# constitution_text = load_constitution_text()
 
 # ============================================
 # 🧹 TEXT PREPROCESSING
@@ -294,16 +327,16 @@ def clean_text(text):
     return text
 
 def extract_claims(text):
-    doc = nlp(text)
+    doc = get_nlp()(text)
     claims = []
     for sent in doc.sents:
         sentence = sent.text.strip()
-        if (len(sentence) > 25 and any(token.pos_ == "VERB" for token in nlp(sentence))):
+        if (len(sentence) > 25 and any(token.pos_ == "VERB" for token in get_nlp()(sentence))):
             claims.append(sentence)
     return claims[:15]
 
 def extract_key_entities(text):
-    doc = nlp(text)
+    doc = get_nlp()(text)
     entities = []
     for ent in doc.ents:
         if ent.label_ in ["PERSON", "ORG", "GPE"]:
@@ -415,6 +448,8 @@ def verify_with_google_fact_check(claim):
     
 def predict_ml_fake_news(text):
 
+    load_fake_news_models()
+
     cleaned = clean_text(text)
 
     vector = tfidf_fake.transform([cleaned])
@@ -504,7 +539,7 @@ One short sentence.
 
 def extract_claim_parts(text):
 
-    doc = nlp(text)
+    doc = get_nlp()(text)
 
     persons = []
     places = []
@@ -797,6 +832,7 @@ def generate_fast_evidence(text):
         }
     
 def verify_with_live_news(text):
+    model = get_semantic_model()
 
     try:
 
@@ -806,7 +842,7 @@ def verify_with_live_news(text):
 
             return 0
 
-        claim_embedding = semantic_model.encode(
+        claim_embedding = model.encode(
             text,
             convert_to_tensor=True
         )
@@ -834,7 +870,7 @@ def verify_with_live_news(text):
             if not content:
                 continue
 
-            article_embedding = semantic_model.encode(
+            article_embedding = model.encode(
                 content,
                 convert_to_tensor=True
             )
@@ -866,7 +902,7 @@ def generate_evidence_analysis(text):
 
     try:
 
-        doc = nlp(text)
+        doc = get_nlp()(text)
 
         subjects = []
 
@@ -1482,6 +1518,8 @@ def predict_fake_news(text):
 
 def predict_legal(text):
 
+    load_legal_models()
+
     cleaned = clean_text(text)
 
     vector = tfidf_legal.transform(
@@ -1563,6 +1601,7 @@ def save_history(email, analysis_type, input_text, result):
 # ============================================
 
 def explain_legal_shap(text):
+    load_legal_models()
     cleaned = clean_text(text)
     vector = tfidf_legal.transform([cleaned])
 
