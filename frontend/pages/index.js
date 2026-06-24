@@ -342,9 +342,9 @@ useEffect(() => {
 
   {" "}
 
-  {visitorCount
-    .toString()
-    .padStart(4, "0")}
+  {(visitorCount || 0)
+  .toString()
+  .padStart(4, "0")}
 
 </div>
 

@@ -195,7 +195,6 @@ app.config['MYSQL_PASSWORD'] = os.getenv("MYSQL_PASSWORD")
 app.config['MYSQL_DB'] = os.getenv("MYSQL_DB")
 app.config['MYSQL_PORT'] = int(os.getenv("MYSQL_PORT", 3306))
 app.config['MAX_CONTENT_LENGTH'] = 10 * 1024 * 1024  # 10 MB max upload
-app.config['MYSQL_CURSORCLASS'] = 'DictCursor'
 
 mysql = MySQL(app)
 
@@ -1320,24 +1319,24 @@ def predict_fake_news(text):
     #             real_score += 5
 
     #             fake_score += 5
-    for claim in claims:
+    # for claim in claims:
 
-        gemini_result = verify_with_gemini(claim)
+    #     gemini_result = verify_with_gemini(claim)
 
-        if not gemini_result:
-            continue
+    #     if not gemini_result:
+    #         continue
 
-        verdict, reason = gemini_result
+    #     verdict, reason = gemini_result
 
-        explanation_parts.append(
-        f"Gemini: {reason}"
-    )
+    #     explanation_parts.append(
+    #     f"Gemini: {reason}"
+    # )
 
-        if verdict is True:
-            real_score += 15
+    #     if verdict is True:
+    #         real_score += 15
 
-        elif verdict is False:
-            fake_score += 15
+    #     elif verdict is False:
+    #         fake_score += 15
 
     # -------------------------
     # TRUSTED NEWS SOURCES
@@ -1369,8 +1368,9 @@ def predict_fake_news(text):
     # LIVE NEWS MATCHING
     # -------------------------
 
-    semantic_score = (verify_with_live_news(text))
+    # semantic_score = (verify_with_live_news(text))
     # semantic_score = -1
+    semantic_score = 50
 
     if semantic_score >= 75:
 
@@ -2370,7 +2370,11 @@ def fact_check():
 
         # LIVE EVIDENCE
         # evidence = generate_evidence_analysis(text)
-        evidence = generate_fast_evidence(text)
+        # evidence = generate_fast_evidence(text)
+        evidence = {
+            "summary": "",
+            "sources": []
+        }
 
         # LEGAL WARNING
         legal_warning = ""
@@ -4546,25 +4550,44 @@ def contact_count():
 @app.route('/admin/maintenance', methods=['GET'])
 def get_maintenance():
 
-    cur = mysql.connection.cursor()
+    try:
 
-    cur.execute(
-        """
-        SELECT maintenance
-        FROM settings
-        WHERE id=1
-        """
-    )
+        cur = mysql.connection.cursor()
 
-    value = cur.fetchone()[0]
+        cur.execute("""
+            SELECT maintenance
+            FROM settings
+            WHERE id=1
+        """)
 
-    cur.close()
+        result = cur.fetchone()
 
-    return jsonify({
+        cur.close()
 
-        "maintenance": value
+        if result is None:
 
-    })
+            return jsonify({
+                "maintenance": False
+            })
+
+        if isinstance(result, dict):
+
+            return jsonify({
+                "maintenance":
+                result.get("maintenance", False)
+            })
+
+        return jsonify({
+            "maintenance": result[0]
+        })
+
+    except Exception as e:
+
+        print("MAINTENANCE ERROR:", str(e))
+
+        return jsonify({
+            "maintenance": False
+        })
 
 @csrf.exempt
 @app.route('/admin/maintenance', methods=['POST'])
