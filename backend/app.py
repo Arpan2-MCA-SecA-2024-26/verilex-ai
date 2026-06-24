@@ -2189,7 +2189,6 @@ def login():
         user = cur.fetchone()
 
         cur.close()
-        is_active = user[6]
 
         if not user:
 
@@ -2199,7 +2198,8 @@ def login():
                 "status": "error",
                 "message": "User not found. Please register first."
             }), 404
-        
+        is_active = user[6]
+
         if user[6] == 0:
 
             logging.warning(

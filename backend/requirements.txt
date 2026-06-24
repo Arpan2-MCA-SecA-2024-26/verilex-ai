@@ -16,7 +16,7 @@ PyMuPDF==1.27.2.3
 
 numpy==1.26.4
 scipy==1.13.1
-scikit-learn==1.5.2
+scikit-learn==1.7.2
 
 xgboost==2.1.1
 joblib==1.5.3
