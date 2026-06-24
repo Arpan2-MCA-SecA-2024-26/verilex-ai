@@ -2,6 +2,7 @@ import { useState } from 'react';
 import Navbar from '../components/Navbar';
 import axios from 'axios';
 import ReCAPTCHA from "react-google-recaptcha";
+import API_URL from "../utils/api";
 
 export default function Contact() {
   const [formData, setFormData] = useState({
@@ -59,7 +60,7 @@ export default function Contact() {
       setLoading(true);
 
       const res = await axios.post(
-        'http://127.0.0.1:5000/contact-message',
+        `${API_URL}/contact-message`,
         {
           ...formData,
           captcha: captchaToken

@@ -2,6 +2,7 @@ import { useState, useRef } from "react";
 import Navbar from "../components/Navbar";
 import ReactMarkdown from "react-markdown";
 import { saveToHistory } from "../utils/saveHistory";
+import API_URL from "../utils/api";
 
 export default function ConstitutionalQA() {
 
@@ -22,7 +23,7 @@ export default function ConstitutionalQA() {
 
       const userEmail = localStorage.getItem("userEmail");
       const response = await fetch(
-        "http://127.0.0.1:5000/ask-constitution",
+        `${API_URL}/ask-constitution`,
         {
           method: "POST",
           headers: {
@@ -104,7 +105,7 @@ formData.append(
     setLoading(true);
 
     const response = await fetch(
-      "http://127.0.0.1:5000/constitution-upload",
+      `${API_URL}/constitution-upload`,
       {
         method: "POST",
         body: formData,

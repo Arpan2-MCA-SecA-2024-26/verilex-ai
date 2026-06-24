@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { useRouter } from "next/router";
 import { FaHome } from "react-icons/fa";
+import API_URL from "../utils/api";
 
 export default function History(){
 
@@ -120,7 +121,7 @@ export default function History(){
 
         const res = await axios.post(
 
-            "http://127.0.0.1:5000/generate-report",
+            `${API_URL}/generate-report`,
 
             {
 

@@ -4,6 +4,7 @@ import Navbar from '../components/Navbar';
 import axios from 'axios';
 import ConfidenceMeter from "../components/ConfidenceMeter";
 import LoadingDots from "../components/LoadingDots";
+import API_URL from "../utils/api";
 
 export default function Legal() {
   const [text, setText] = useState('');
@@ -57,7 +58,7 @@ export default function Legal() {
       setExplanation('');
 
       const res = await axios.post(
-        'http://127.0.0.1:5000/legal-upload',
+        `${API_URL}/legal-upload`,
         formData,
         {
           headers: {
@@ -114,7 +115,7 @@ saveToHistory(
 
       const userEmail = localStorage.getItem("userEmail");
       const res = await axios.post(
-        'http://127.0.0.1:5000/legal',
+        `${API_URL}/legal`,
         {
           text,
           use_xai: useXai,
@@ -151,7 +152,7 @@ const downloadReport = async () => {
 
     const res = await axios.post(
 
-      "http://127.0.0.1:5000/generate-report",
+      `${API_URL}/generate-report`,
 
       {
 

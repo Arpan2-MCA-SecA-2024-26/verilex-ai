@@ -6,6 +6,7 @@ import { FcGoogle } from 'react-icons/fc';
 import Navbar from '../components/Navbar';
 import axios from 'axios';
 import { useRouter } from 'next/router';
+import API_URL from "../utils/api";
 
 export default function Login() {
   const router = useRouter();
@@ -68,7 +69,7 @@ const handleGoogleLogin = useGoogleLogin({
       const user = userInfo.data;
 
       const userLoginResponse = await axios.post(
-        "http://127.0.0.1:5000/google-login",
+        `${API_URL}/google-login`,
         {
           name: user.name,
           email: user.email,
@@ -227,7 +228,7 @@ useEffect(() => {
 
     try {
       const res = await axios.post(
-        'http://127.0.0.1:5000/login',
+        `${API_URL}/login`,
         {
           email: loginEmail,
           password: loginPassword,
@@ -365,7 +366,7 @@ const sendRegisterOtp = async () => {
   try {
 
     await axios.post(
-      'http://127.0.0.1:5000/send-otp',
+      `${API_URL}/send-otp`,
       {
         email: registerEmail,
         purpose: "registration"
@@ -398,7 +399,7 @@ const sendForgotOtp = async () => {
   try {
 
     await axios.post(
-      'http://127.0.0.1:5000/send-reset-otp',
+      `${API_URL}/send-reset-otp`,
       {
         email: forgotEmail
       }
@@ -483,7 +484,7 @@ if (!otpVerified) {
 
     try {
       const res = await axios.post(
-        'http://127.0.0.1:5000/register',
+        `${API_URL}/register`,
         {
           name,
           email: registerEmail,
@@ -534,7 +535,7 @@ const handleVerifyOtp = async () => {
   try {
 
     const otpRes = await axios.post(
-      'http://127.0.0.1:5000/verify-otp',
+      `${API_URL}/verify-otp`,
       {
         email: registerEmail,
         otp: otp,
@@ -914,7 +915,7 @@ const handleVerifyOtp = async () => {
             //   try {
 
             //     await axios.post(
-            //       'http://127.0.0.1:5000/send-reset-otp',
+            //       `${API_URL}/send-reset-otp`,
             //       { email: forgotEmail }
             //     );
 
@@ -1056,7 +1057,7 @@ const handleVerifyOtp = async () => {
       try {
 
         const res = await axios.post(
-          'http://127.0.0.1:5000/reset-password',
+          `${API_URL}/reset-password`,
           {
             email: forgotEmail,
             otp: forgotOtp,

@@ -4,6 +4,7 @@ import Navbar from '../components/Navbar';
 import LoadingDots from "../components/LoadingDots";
 import axios from 'axios';
 import ConfidenceMeter from "../components/ConfidenceMeter";
+import API_URL from "../utils/api";
 
 export default function FactCheck() {
   const [text, setText] = useState('');
@@ -63,7 +64,7 @@ export default function FactCheck() {
       setExplanation('');
 
       const res = await axios.post(
-        'http://127.0.0.1:5000/fact-check-upload',
+        `${API_URL}/fact-check-upload`,
         formData,
         {
           headers: {
@@ -125,7 +126,7 @@ export default function FactCheck() {
 
       const userEmail = localStorage.getItem("userEmail");
       const res = await axios.post(
-        'http://127.0.0.1:5000/fact-check',
+        `${API_URL}/fact-check`,
         {
           text,
           use_xai: useXai,
@@ -168,7 +169,7 @@ const downloadReport = async () => {
 
     const res = await axios.post(
 
-      "http://127.0.0.1:5000/generate-report",
+      `${API_URL}/generate-report`,
 
       {
 

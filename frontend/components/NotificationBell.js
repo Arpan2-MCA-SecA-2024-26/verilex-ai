@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { IoNotificationsOutline } from "react-icons/io5";
+import API_URL from "../utils/api";
 
 export default function NotificationBell() {
 
@@ -13,7 +14,7 @@ export default function NotificationBell() {
   const loadNotifications = () => {
 
     fetch(
-      "http://localhost:5000/notifications"
+      `${API_URL}/notifications`
     )
 
     .then(res => res.json())
@@ -97,7 +98,7 @@ export default function NotificationBell() {
 
     await fetch(
 
-      `http://localhost:5000/admin/delete-notification/${id}`,
+      `${API_URL}/admin/delete-notification/${id}`,
 
       {
         method:"DELETE"
@@ -132,7 +133,7 @@ export default function NotificationBell() {
 
     await fetch(
 
-      "http://localhost:5000/admin/clear-notifications",
+      `${API_URL}/admin/clear-notifications`,
 
       {
         method:"DELETE"

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useRouter } from "next/router";
+import API_URL from "../utils/api";
 
 export default function AdminLogin() {
 
@@ -21,7 +22,7 @@ export default function AdminLogin() {
 }
 
     const response = await fetch(
-      "http://localhost:5000/admin/login",
+      `${API_URL}/admin/login`,
       {
         method: "POST",
         headers: {

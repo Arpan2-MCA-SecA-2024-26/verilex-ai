@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { FaSearch } from "react-icons/fa";
+import API_URL from "../utils/api";
 
 export default function AdminDashboard(){
 
@@ -39,7 +40,7 @@ export default function AdminDashboard(){
   try{
 
     const response = await fetch(
-      "http://localhost:5000/admin/user-count"
+      `${API_URL}/admin/user-count`
     );
 
     const data = await response.json();
@@ -63,7 +64,7 @@ const loadNotificationCount = async()=>{
   try{
 
     const response = await fetch(
-      "http://localhost:5000/admin/notification-count"
+      `${API_URL}/admin/notification-count`
     );
 
     const data = await response.json();
@@ -87,7 +88,7 @@ const loadContactCount = async()=>{
   try{
 
     const response = await fetch(
-      "http://localhost:5000/admin/contact-count"
+      `${API_URL}/admin/contact-count`
     );
 
     const data = await response.json();
@@ -111,7 +112,7 @@ const loadUsers = async()=>{
   try{
 
     const response = await fetch(
-      "http://localhost:5000/admin/users"
+      `${API_URL}/admin/users`
     );
 
     const data = await response.json();
@@ -135,7 +136,7 @@ const loadMessages = async()=>{
     const response =
     await fetch(
 
-      "http://localhost:5000/admin/contact-messages"
+      `${API_URL}/admin/contact-messages`
 
     );
 
@@ -161,7 +162,7 @@ const loadAllNotifications = async()=>{
     const response =
     await fetch(
 
-      "http://localhost:5000/admin/all-notifications"
+      `${API_URL}/admin/all-notifications`
 
     );
 
@@ -188,7 +189,7 @@ const loadLogs = async()=>{
 
     const response =
       await fetch(
-        "http://localhost:5000/admin/activity-logs"
+        `${API_URL}/admin/activity-logs`
       );
 
     const data = await response.json();
@@ -211,7 +212,7 @@ const loadUserProfile = async(email)=>{
 
     const response =
       await fetch(
-        `http://localhost:5000/admin/user-profile/${encodeURIComponent(email)}`
+        `${API_URL}/admin/user-profile/${encodeURIComponent(email)}`
       );
 
     const data = await response.json();
@@ -235,7 +236,7 @@ const loadMaintenance = async()=>{
   const response =
   await fetch(
 
-    "http://localhost:5000/admin/maintenance"
+    `${API_URL}/admin/maintenance`
 
   );
 
@@ -277,7 +278,7 @@ const toggleMaintenance = async()=>{
     const response =
       await fetch(
 
-        "http://localhost:5000/admin/maintenance",
+        `${API_URL}/admin/maintenance`,
 
         {
           method:"POST",
@@ -336,7 +337,7 @@ const deleteUser = async(id)=>{
 
     await fetch(
 
-      `http://localhost:5000/admin/delete-user/${id}`,
+      `${API_URL}/admin/delete-user/${id}`,
 
       {
         method:"DELETE"
@@ -373,7 +374,7 @@ const toggleUserStatus = async(id)=>{
 
     await fetch(
 
-      `http://localhost:5000/admin/toggle-user-status/${id}`,
+      `${API_URL}/admin/toggle-user-status/${id}`,
 
       {
         method:"POST"
@@ -405,7 +406,7 @@ const deleteNotification = async(id)=>{
 
     await fetch(
 
-      `http://localhost:5000/admin/delete-notification/${id}`,
+      `${API_URL}/admin/delete-notification/${id}`,
 
       {
         method:"DELETE"
@@ -478,7 +479,7 @@ const searchUsers = ()=>{
       const response =
         await fetch(
 
-          "http://localhost:5000/admin/send-notification",
+          `${API_URL}/admin/send-notification`,
 
           {
             method:"POST",

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { FaCamera, FaLock, FaCalendarAlt, FaEdit, FaHome, FaTimes, FaEye, FaEyeSlash, FaTrash } from "react-icons/fa";
 import { useRouter } from "next/router";
 import axios from "axios";
+import API_URL from "../utils/api";
 
 export default function Profile() {
 
@@ -93,7 +94,7 @@ useEffect(() => {
     try {
 
       const response = await axios.get(
-        `http://127.0.0.1:5000/get-profile/${storedEmail}`
+        `${API_URL}/get-profile/${storedEmail}`
       );
 
       const data = response.data.profile;
@@ -228,7 +229,7 @@ const sendOtp = async () => {
   try {
 
     await axios.post(
-      "http://127.0.0.1:5000/send-otp",
+      `${API_URL}/send-otp`,
       {
         email: newEmail,
         purpose: "email_update"
@@ -266,7 +267,7 @@ const verifyOtp = async () => {
   try {
 
     const res = await axios.post(
-      "http://127.0.0.1:5000/verify-otp",
+      `${API_URL}/verify-otp`,
       {
         email: newEmail,
         otp: emailOtp
@@ -281,7 +282,7 @@ const verifyOtp = async () => {
   const oldEmail = profile.email;
 
   await axios.post(
-    "http://127.0.0.1:5000/update-email",
+    `${API_URL}/update-email`,
     {
       old_email: oldEmail,
       new_email: newEmail
@@ -414,7 +415,7 @@ const handleDeleteProfilePicture = async () => {
     console.log("Deleting image for:", profile.email);
 
   const response = await axios.post(
-    "http://127.0.0.1:5000/delete-profile-picture",
+    `${API_URL}/delete-profile-picture`,
   {
     email: profile.email
   }
@@ -489,7 +490,7 @@ console.log(response.data);
     }
 
     const response = await axios.post(
-      "http://127.0.0.1:5000/save-profile",
+      `${API_URL}/save-profile`,
       formData,
       {
         headers: {
@@ -583,7 +584,7 @@ localStorage.setItem(
   try {
 
     const response = await axios.post(
-      "http://127.0.0.1:5000/change-password",
+      `${API_URL}/change-password`,
       {
         email: profile.email,
         old_password: passwords.oldPassword,

@@ -86,9 +86,7 @@ CORS(
     app,
     resources={
         r"/*": {
-            "origins": [
-                "https://your-frontend-domain.onrender.com"
-            ]
+            "origins": "*"
         }
     }
 )
@@ -114,24 +112,24 @@ def too_large(e):
         "message": "File too large. Maximum allowed size is 10 MB."
     }), 413
 
-@app.errorhandler(Exception)
-def handle_exception(e):
-    logging.error(f"SERVER ERROR: {str(e)}")
-    return jsonify({
-        "status": "error",
-        "message": "Internal server error"
-    }), 500
-
 # @app.errorhandler(Exception)
 # def handle_exception(e):
-
-#     print("SERVER ERROR:")
-#     print(str(e))
-
+#     logging.error(f"SERVER ERROR: {str(e)}")
 #     return jsonify({
-#         "status":"error",
-#         "message":str(e)
-#     }),500
+#         "status": "error",
+#         "message": "Internal server error"
+#     }), 500
+
+@app.errorhandler(Exception)
+def handle_exception(e):
+
+    print("SERVER ERROR:")
+    print(str(e))
+
+    return jsonify({
+        "status":"error",
+        "message":str(e)
+    }),500
 
 logging.basicConfig(
     filename='security.log',

@@ -1,6 +1,7 @@
 import Navbar from '../components/Navbar';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
+import API_URL from "../utils/api";
 
 export default function Home() {
   const router = useRouter();
@@ -59,7 +60,7 @@ useEffect(() => {
 
       const res =
         await fetch(
-          "http://127.0.0.1:5000/track-visitor",
+          `${API_URL}/track-visitor`,
           {
             method: "POST",
 
@@ -111,7 +112,7 @@ useEffect(() => {
 
           const res =
             await fetch(
-              "http://127.0.0.1:5000/visitor-count"
+              `${API_URL}/visitor-count`
             );
 
           const data =

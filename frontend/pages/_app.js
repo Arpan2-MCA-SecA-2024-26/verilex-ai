@@ -6,6 +6,7 @@ import CookieConsent from "../components/CookieConsent";
 import { useRouter } from "next/router";
 import { useState,useEffect } from "react";
 import { GoogleOAuthProvider } from "@react-oauth/google";
+import API_URL from "../utils/api";
 
 export default function MyApp({
   Component,
@@ -23,7 +24,7 @@ export default function MyApp({
     try
     {
 
-      const response = await fetch("http://localhost:5000/admin/maintenance");
+      const response = await fetch(`${API_URL}/admin/maintenance`);
       const data = await response.json();
       setMaintenance(data.maintenance);
     }
