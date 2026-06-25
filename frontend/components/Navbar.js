@@ -181,14 +181,14 @@ export default function Navbar() {
         Bail Prediction
       </div>
 
-      <div
+      {/* <div
         className="legal-dropdown-item"
         onClick={() =>
           router.push('/constitutional-qa')
         }
       >
         Constitutional Q&A Assistant
-      </div>
+      </div> */}
 
     </div>
 

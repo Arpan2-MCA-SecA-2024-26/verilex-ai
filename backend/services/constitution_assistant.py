@@ -1,10 +1,6 @@
-import faiss
 import pickle
 import numpy as np
-
-from sentence_transformers import SentenceTransformer
 import google.generativeai as genai
-
 import os
 from dotenv import load_dotenv
 
@@ -24,6 +20,20 @@ model = genai.GenerativeModel(
 embedder = None
 
 def get_embedder():
+
+    global embedder
+
+    if embedder is None:
+
+        from sentence_transformers import SentenceTransformer
+
+        embedder = SentenceTransformer(
+            "all-MiniLM-L6-v2"
+        )
+
+    return embedder
+
+def get_embedder():
     global embedder
 
     if embedder is None:
@@ -39,20 +49,35 @@ def get_embedder():
 index = None
 
 def get_index():
+
     global index
 
     if index is None:
+
+        import faiss
+
         index = faiss.read_index(
             "constitution_rag/constitution_index.faiss"
         )
 
     return index
 
-with open(
-    "constitution_rag/constitution_chunks.pkl",
-    "rb"
-) as f:
-    chunks = pickle.load(f)
+chunks = None
+
+def get_chunks():
+
+    global chunks
+
+    if chunks is None:
+
+        with open(
+            "constitution_rag/constitution_chunks.pkl",
+            "rb"
+        ) as f:
+
+            chunks = pickle.load(f)
+
+    return chunks
 
 
 def search_constitution(query):
@@ -72,8 +97,8 @@ def search_constitution(query):
     for idx in indices[0]:
 
         context += (
-            f"\n\nPage {chunks[idx]['page']}:\n"
-            f"{chunks[idx]['text']}"
+            f"\n\nPage {get_chunks()[idx]['page']}:\n"
+            f"{get_chunks()[idx]['text']}"
         )
 
     return context
