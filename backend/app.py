@@ -210,17 +210,7 @@ def get_semantic_model():
         )
     return semantic_model
 
-# nlp = spacy.load(
-#     "en_core_web_sm"
-# )
-nlp = None
-def get_nlp():
-    global nlp
-    if nlp is None:
-        nlp = spacy.load(
-            "en_core_web_sm"
-        )
-    return nlp
+nlp = spacy.load("en_core_web_sm")
 
 wiki = wikipediaapi.Wikipedia(
     language='en',
@@ -232,29 +222,11 @@ wiki = wikipediaapi.Wikipedia(
 # 📦 LOAD MODELS
 # ============================================
 
-# lr_model = joblib.load('models/fake_news/lr_model.pkl')
-# tfidf_fake = joblib.load('models/fake_news/tfidf_vectorizer.pkl')
-lr_model = None
-tfidf_fake = None
-def load_fake_news_models():
-    global lr_model
-    global tfidf_fake
-    if lr_model is None:
-        lr_model = joblib.load('models/fake_news/lr_model.pkl')
-    if tfidf_fake is None:
-        tfidf_fake = joblib.load('models/fake_news/tfidf_vectorizer.pkl')
+lr_model = joblib.load('models/fake_news/lr_model.pkl')
+tfidf_fake = joblib.load('models/fake_news/tfidf_vectorizer.pkl')
 
-# legal_model = joblib.load('models/legal/xgb_model.pkl')
-# tfidf_legal = joblib.load('models/legal/tfidf_vectorizer.pkl')
-legal_model = None
-tfidf_legal = None
-def load_legal_models():
-    global legal_model
-    global tfidf_legal
-    if legal_model is None:
-        legal_model = joblib.load('models/legal/xgb_model.pkl')
-    if tfidf_legal is None:
-        tfidf_legal = joblib.load('models/legal/tfidf_vectorizer.pkl')
+legal_model = joblib.load('models/legal/xgb_model.pkl')
+tfidf_legal = joblib.load('models/legal/tfidf_vectorizer.pkl')
 
 print("Loading fact verification model...")
 
@@ -324,16 +296,16 @@ def clean_text(text):
     return text
 
 def extract_claims(text):
-    doc = get_nlp()(text)
+    doc = nlp(text)
     claims = []
     for sent in doc.sents:
         sentence = sent.text.strip()
-        if (len(sentence) > 25 and any(token.pos_ == "VERB" for token in get_nlp()(sentence))):
+        if (len(sentence) > 25 and any(token.pos_ == "VERB" for token in nlp(sentence))):
             claims.append(sentence)
     return claims[:15]
 
 def extract_key_entities(text):
-    doc = get_nlp()(text)
+    doc = nlp(text)
     entities = []
     for ent in doc.ents:
         if ent.label_ in ["PERSON", "ORG", "GPE"]:
@@ -445,8 +417,6 @@ def verify_with_google_fact_check(claim):
     
 def predict_ml_fake_news(text):
 
-    load_fake_news_models()
-
     cleaned = clean_text(text)
 
     vector = tfidf_fake.transform([cleaned])
@@ -536,7 +506,7 @@ One short sentence.
 
 def extract_claim_parts(text):
 
-    doc = get_nlp()(text)
+    doc = nlp(text)
 
     persons = []
     places = []
@@ -899,7 +869,7 @@ def generate_evidence_analysis(text):
 
     try:
 
-        doc = get_nlp()(text)
+        doc = nlp(text)
 
         subjects = []
 
@@ -1272,71 +1242,71 @@ def predict_fake_news(text):
     # GEMINI FACT VERIFICATION
     # -------------------------
 
-    # if claims and not skip_gemini:
+    if claims and not skip_gemini:
 
-    #     merged_claim = ". ".join(
+        merged_claim = ". ".join(
 
-    #         claims
+            claims
 
-    #     )
+        )
 
-    #     gemini_result = (
+        gemini_result = (
 
-    #         verify_with_gemini(
+            verify_with_gemini(
 
-    #             merged_claim
+                merged_claim
 
-    #         )
+            )
 
-    #     )
+        )
 
-    #     if gemini_result:
+        if gemini_result:
 
-    #         gemini_verdict, gemini_reason = (
+            gemini_verdict, gemini_reason = (
 
-    #             gemini_result
+                gemini_result
 
-    #         )
+            )
 
-    #         explanation_parts.append(
+            explanation_parts.append(
 
-    #             "Gemini: "
+                "Gemini: "
 
-    #             + gemini_reason
+                + gemini_reason
 
-    #         )
+            )
 
-    #         if gemini_verdict is True:
+            if gemini_verdict is True:
 
-    #             real_score += 35
+                real_score += 35
 
-    #         elif gemini_verdict is False:
+            elif gemini_verdict is False:
 
-    #             fake_score += 35
+                fake_score += 35
 
-    #         else:
+            else:
 
-    #             real_score += 5
+                real_score += 5
 
-    #             fake_score += 5
-    # for claim in claims:
+                fake_score += 5
+    for claim in claims:
 
-    #     gemini_result = verify_with_gemini(claim)
+        gemini_result = verify_with_gemini(claim)
 
-    #     if not gemini_result:
-    #         continue
+        if not gemini_result:
+            continue
 
-    #     verdict, reason = gemini_result
+        verdict, reason = gemini_result
 
-    #     explanation_parts.append(
-    #     f"Gemini: {reason}"
-    # )
+        explanation_parts.append(
+        f"Gemini: {reason}"
+    )
 
-    #     if verdict is True:
-    #         real_score += 15
+        if verdict is True:
+            real_score += 15
 
-    #     elif verdict is False:
-    #         fake_score += 15
+        elif verdict is False:
+            fake_score += 15
 
     # -------------------------
     # TRUSTED NEWS SOURCES
@@ -1368,9 +1338,7 @@ def predict_fake_news(text):
     # LIVE NEWS MATCHING
     # -------------------------
 
-    # semantic_score = (verify_with_live_news(text))
-    # semantic_score = -1
-    semantic_score = 50
+    semantic_score = (verify_with_live_news(text))
 
     if semantic_score >= 75:
 
@@ -1516,8 +1484,6 @@ def predict_fake_news(text):
 
 def predict_legal(text):
 
-    load_legal_models()
-
     cleaned = clean_text(text)
 
     vector = tfidf_legal.transform(
@@ -1599,7 +1565,6 @@ def save_history(email, analysis_type, input_text, result):
 # ============================================
 
 def explain_legal_shap(text):
-    load_legal_models()
     cleaned = clean_text(text)
     vector = tfidf_legal.transform([cleaned])
 
@@ -3960,191 +3925,191 @@ def visitor_count():
 # ⚖ CONSTITUTIONAL Q&A API
 # ============================================
 
-# @csrf.exempt
-# @app.route('/ask-constitution', methods=['POST'])
-# def ask_constitution():
+@csrf.exempt
+@app.route('/ask-constitution', methods=['POST'])
+def ask_constitution():
 
-#     try:
+    try:
 
-#         data = request.get_json()
+        data = request.get_json()
 
-#         question = data.get(
-#             "question",
-#             ""
-#         ).strip()
+        question = data.get(
+            "question",
+            ""
+        ).strip()
 
-#         email = data.get(
-#             "email"
-#         )
+        email = data.get(
+            "email"
+        )
 
-#         key = os.getenv(
-#             "GEMINI_API_KEY"
-#         )
+        key = os.getenv(
+            "GEMINI_API_KEY"
+        )
 
-#         genai.configure(
-#             api_key=key
-#         )
+        genai.configure(
+            api_key=key
+        )
 
-#         model = genai.GenerativeModel(
-#             "gemini-2.5-flash"
-#         )
+        model = genai.GenerativeModel(
+            "gemini-2.5-flash"
+        )
 
-#         response = model.generate_content(
-#             f"""
-# Answer the following constitutional question clearly and professionally:
+        response = model.generate_content(
+            f"""
+Answer the following constitutional question clearly and professionally:
 
-# {question}
-# """
-#         )
+{question}
+"""
+        )
 
-#         answer = response.text
+        answer = response.text
 
-#         save_history(
-#             email,
-#             "Constitutional Q&A",
-#             question,
-#             answer[:500]
-#         )
+        save_history(
+            email,
+            "Constitutional Q&A",
+            question,
+            answer[:500]
+        )
 
-#         return jsonify({
-#             "answer": answer
-#         })
+        return jsonify({
+            "answer": answer
+        })
 
-#     except Exception as e:
+    except Exception as e:
 
-#         print(
-#             "CONSTITUTION ERROR:",
-#             str(e)
-#         )
+        print(
+            "CONSTITUTION ERROR:",
+            str(e)
+        )
 
-#         return jsonify({
-#             "error": str(e)
-#         }), 500
+        return jsonify({
+            "error": str(e)
+        }), 500
     
-# @csrf.exempt
-# @app.route('/constitution-upload', methods=['POST'])
-# def constitution_upload():
+@csrf.exempt
+@app.route('/constitution-upload', methods=['POST'])
+def constitution_upload():
 
-#     try:
+    try:
 
-#         if 'file' not in request.files:
+        if 'file' not in request.files:
 
-#             return jsonify({
-#                 "message": "No file uploaded."
-#             }), 400
+            return jsonify({
+                "message": "No file uploaded."
+            }), 400
 
-#         file = request.files['file']
+        file = request.files['file']
 
-#         if file.filename == '':
+        if file.filename == '':
 
-#             return jsonify({
-#                 "message": "No file selected."
-#             }), 400
+            return jsonify({
+                "message": "No file selected."
+            }), 400
 
-#         email = request.form.get("email")
+        email = request.form.get("email")
 
-#         filename = file.filename.lower()
+        filename = file.filename.lower()
 
-#         extracted_text = ""
+        extracted_text = ""
 
-#         # TXT
-#         if filename.endswith('.txt'):
+        # TXT
+        if filename.endswith('.txt'):
 
-#             extracted_text = file.read().decode(
-#                 'utf-8',
-#                 errors='ignore'
-#             )
+            extracted_text = file.read().decode(
+                'utf-8',
+                errors='ignore'
+            )
 
-#         # PDF
-#         elif filename.endswith('.pdf'):
+        # PDF
+        elif filename.endswith('.pdf'):
 
-#             pdf = fitz.open(
-#                 stream=file.read(),
-#                 filetype="pdf"
-#             )
+            pdf = fitz.open(
+                stream=file.read(),
+                filetype="pdf"
+            )
 
-#             for page in pdf:
+            for page in pdf:
 
-#                 extracted_text += (
-#                     page.get_text() + "\n"
-#                 )
+                extracted_text += (
+                    page.get_text() + "\n"
+                )
 
-#         # DOCX
-#         elif filename.endswith('.docx'):
+        # DOCX
+        elif filename.endswith('.docx'):
 
-#             doc = docx.Document(file)
+            doc = docx.Document(file)
 
-#             extracted_text = "\n".join(
-#                 p.text
-#                 for p in doc.paragraphs
-#             )
+            extracted_text = "\n".join(
+                p.text
+                for p in doc.paragraphs
+            )
 
-#         else:
+        else:
 
-#             return jsonify({
-#                 "message":
-#                 "Only TXT, PDF and DOCX files are supported."
-#             }), 400
+            return jsonify({
+                "message":
+                "Only TXT, PDF and DOCX files are supported."
+            }), 400
 
-#         # Prevent huge prompts
-#         extracted_text = extracted_text[:20000]
+        # Prevent huge prompts
+        extracted_text = extracted_text[:20000]
 
-#         # Gemini
-#         key = os.getenv(
-#             "GEMINI_API_KEY"
-#         )
+        # Gemini
+        key = os.getenv(
+            "GEMINI_API_KEY"
+        )
 
-#         genai.configure(
-#             api_key=key
-#         )
+        genai.configure(
+            api_key=key
+        )
 
-#         model = genai.GenerativeModel(
-#             "gemini-2.5-flash"
-#         )
+        model = genai.GenerativeModel(
+            "gemini-2.5-flash"
+        )
 
-#         response = model.generate_content(
-#             f"""
-# Answer the following constitutional question clearly and professionally:
+        response = model.generate_content(
+            f"""
+Answer the following constitutional question clearly and professionally:
 
-# {extracted_text}
-# """
-#         )
+{extracted_text}
+"""
+        )
 
-#         answer = response.text
+        answer = response.text
 
-#         save_history(
-#             email,
-#             "Constitutional Q&A",
-#             extracted_text[:5000],
-#             answer[:500]
-#         )
+        save_history(
+            email,
+            "Constitutional Q&A",
+            extracted_text[:5000],
+            answer[:500]
+        )
 
-#         return jsonify({
+        return jsonify({
 
-#             "extracted_text":
-#             extracted_text,
+            "extracted_text":
+            extracted_text,
 
-#             "answer":
-#             answer
+            "answer":
+            answer
 
-#         })
+        })
 
-#     except Exception as e:
+    except Exception as e:
 
-#         print(
-#             "CONSTITUTION UPLOAD ERROR:",
-#             str(e)
-#         )
+        print(
+            "CONSTITUTION UPLOAD ERROR:",
+            str(e)
+        )
 
-#         return jsonify({
-#             "message": str(e)
-#         }), 500
+        return jsonify({
+            "message": str(e)
+        }), 500
     
-# from routes.constitution import constitution_bp
+from routes.constitution import constitution_bp
 
-# app.register_blueprint(
-#     constitution_bp
-# )
+app.register_blueprint(
+    constitution_bp
+)
 
 @csrf.exempt
 @app.route("/google-login", methods=["POST"])
