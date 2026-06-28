@@ -47,3 +47,5 @@ matplotlib==3.9.0
 mysql-connector-python==9.0.0
 
 Werkzeug==3.1.8
+google-cloud-storage
+groq

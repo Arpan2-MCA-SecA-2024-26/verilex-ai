@@ -52,6 +52,7 @@ import fitz
 import docx
 from werkzeug.security import generate_password_hash
 import mysql.connector
+from google.cloud import storage
 
 
 otp_storage = {}
@@ -91,9 +92,18 @@ CORS(
     }
 )
 
-PROFILE_UPLOAD_FOLDER = 'profile_pictures'
-os.makedirs(PROFILE_UPLOAD_FOLDER, exist_ok=True)
-app.config['PROFILE_UPLOAD_FOLDER'] = PROFILE_UPLOAD_FOLDER
+storage_client = None
+bucket = None
+
+if os.getenv("K_SERVICE"):   # Running on Cloud Run
+    storage_client = storage.Client()
+    bucket = storage_client.bucket(
+        os.getenv("PROFILE_BUCKET")
+    )
+
+# PROFILE_UPLOAD_FOLDER = 'profile_pictures'
+# os.makedirs(PROFILE_UPLOAD_FOLDER, exist_ok=True)
+# app.config['PROFILE_UPLOAD_FOLDER'] = PROFILE_UPLOAD_FOLDER
 
 @app.after_request
 def security_headers(response):
@@ -779,6 +789,8 @@ def generate_fast_evidence(text):
 
             if source:
                 sources.append(source)
+        print("SUMMARY =", " | ".join(titles))
+        print("SOURCES =", list(set(sources)))
 
         return {
 
@@ -2239,20 +2251,38 @@ def login():
 
         cur = mysql.connection.cursor()
 
-        cur.execute(
-            """
-            SELECT id
-            FROM user_profiles
-            WHERE user_email=%s
-            """,
-            (email,)
-        )
+        cur.execute("""
+        SELECT
+        username,
+        gender,
+        dob,
+        country,
+        occupation,
+        bio
+        FROM user_profiles
+        WHERE user_email=%s
+        """, (email,))
 
         profile = cur.fetchone()
 
-        cur.close()
+        if not profile:
 
-        profile_completed = profile is not None
+            profile_completed = False
+
+        else:
+
+            username, gender, dob, country, occupation, bio = profile
+
+            profile_completed = all([
+                username,
+                gender,
+                dob,
+                country,
+                occupation,
+                bio
+            ])
+        cur.close()
+        
         return jsonify({
             "status": "success",
             "message": "Login successful",
@@ -2334,13 +2364,10 @@ def fact_check():
             print("SAVE HISTORY CALLED")
 
         # LIVE EVIDENCE
-        # evidence = generate_evidence_analysis(text)
-        # evidence = generate_fast_evidence(text)
-        evidence = {
-            "summary": "",
-            "sources": []
-        }
-
+        evidence = generate_fast_evidence(text)
+        print("========== EVIDENCE ==========")
+        print(evidence)
+        print("==============================")
         # LEGAL WARNING
         legal_warning = ""
 
@@ -3312,14 +3339,33 @@ def save_profile():
                     + filename
                 )
 
-                filepath = os.path.join(
-                    app.config['PROFILE_UPLOAD_FOLDER'],
-                    filename
-                )
+                # filepath = os.path.join(
+                #     app.config['PROFILE_UPLOAD_FOLDER'],
+                #     filename
+                # )
 
-                file.save(filepath)
+                # file.save(filepath)
 
-                # SAVE ONLY FILE NAME IN DATABASE
+                # # SAVE ONLY FILE NAME IN DATABASE
+                # profile_picture = filename
+                if bucket:
+
+                    blob = bucket.blob(filename)
+
+                    blob.upload_from_file(
+                        file,
+                        content_type=file.content_type
+                    )
+
+                else:
+
+                    filepath = os.path.join(
+                        app.config["PROFILE_UPLOAD_FOLDER"],
+                        filename
+                    )
+
+                    file.save(filepath)
+
                 profile_picture = filename
 
         cur = mysql.connection.cursor()
@@ -3709,13 +3755,35 @@ def change_password():
             "message": str(e)
         }), 500
 
-@app.route('/profile-picture/<filename>')
+from flask import send_file
+
+@app.route("/profile-picture/<filename>")
 def profile_picture(filename):
 
-    return send_from_directory(
-        app.config['PROFILE_UPLOAD_FOLDER'],
-        filename
-    )
+    try:
+
+        blob = bucket.blob(filename)
+
+        if not blob.exists():
+
+            return jsonify({
+                "status":"error",
+                "message":"Image not found"
+            }),404
+
+        image_bytes = blob.download_as_bytes()
+
+        return send_file(
+            io.BytesIO(image_bytes),
+            mimetype=blob.content_type
+        )
+
+    except Exception as e:
+
+        return jsonify({
+            "status":"error",
+            "message":str(e)
+        }),500
 
 @csrf.exempt
 @app.route('/delete-profile-picture', methods=['POST'])
@@ -3773,16 +3841,28 @@ def delete_profile_picture():
             "message": "Profile picture deleted successfully"
     })
 
-        # Delete physical image file
+        # Delete image from Google Cloud Storage
+
         if filename:
 
-            filepath = os.path.join(
-                app.config['PROFILE_UPLOAD_FOLDER'],
-                filename
-            )
+            if bucket:
 
-            if os.path.exists(filepath):
-                os.remove(filepath)
+                blob = bucket.blob(filename)
+
+                if blob.exists():
+
+                    blob.delete()
+
+            else:
+
+                filepath = os.path.join(
+                    app.config["PROFILE_UPLOAD_FOLDER"],
+                    filename
+                )
+
+                if os.path.exists(filepath):
+
+                    os.remove(filepath)
 
         # Remove filename from database
         cur.execute(
@@ -4162,19 +4242,37 @@ def google_login():
 
             mysql.connection.commit()
 
-            cursor.execute(
-                """
-                SELECT id
-                FROM user_profiles
-                WHERE user_email=%s
-                """,
-                (email,)
-            )
+            cursor.execute("""
+            SELECT
+            username,
+            gender,
+            dob,
+            country,
+            occupation,
+            bio
+            FROM user_profiles
+            WHERE user_email=%s
+            """, (email,))
 
             profile = cursor.fetchone()
 
-            profile_completed = profile is not None
+            if not profile:
 
+                profile_completed = False
+
+            else:
+
+                username, gender, dob, country, occupation, bio = profile
+
+                profile_completed = all([
+                    username,
+                    gender,
+                    dob,
+                    country,
+                    occupation,
+                    bio
+                ])
+            cursor.close()
             return jsonify({
                 "message": "Login successful",
                 "name": user[1],

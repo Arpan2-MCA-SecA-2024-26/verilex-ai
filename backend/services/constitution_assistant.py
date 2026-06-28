@@ -1,17 +1,14 @@
 import pickle
 import numpy as np
-import google.generativeai as genai
+from groq import Groq
 import os
+import traceback
 from dotenv import load_dotenv
 
 load_dotenv()
 
-genai.configure(
-    api_key=os.getenv("GEMINI_API_KEY")
-)
-
-model = genai.GenerativeModel(
-    "gemini-2.5-flash"
+client = Groq(
+    api_key=os.getenv("GROQ_API_KEY")
 )
 
 # embedder = SentenceTransformer(
@@ -27,16 +24,6 @@ def get_embedder():
 
         from sentence_transformers import SentenceTransformer
 
-        embedder = SentenceTransformer(
-            "all-MiniLM-L6-v2"
-        )
-
-    return embedder
-
-def get_embedder():
-    global embedder
-
-    if embedder is None:
         embedder = SentenceTransformer(
             "all-MiniLM-L6-v2"
         )
@@ -82,11 +69,30 @@ def get_chunks():
 
 def search_constitution(query):
 
+    print("=" * 60)
+    print("Searching Constitution...")
+    print("Working Directory:", os.getcwd())
+
+    print(
+        "FAISS Exists:",
+        os.path.exists(
+            "constitution_rag/constitution_index.faiss"
+        )
+    )
+
+    print(
+        "Chunks Exists:",
+        os.path.exists(
+            "constitution_rag/constitution_chunks.pkl"
+        )
+    )
+
     vector = get_embedder().encode(
         [query]
     )
 
     idx = get_index()
+
     distances, indices = idx.search(
         vector.astype("float32"),
         8
@@ -94,11 +100,11 @@ def search_constitution(query):
 
     context = ""
 
-    for idx in indices[0]:
+    for i in indices[0]:
 
         context += (
-            f"\n\nPage {get_chunks()[idx]['page']}:\n"
-            f"{get_chunks()[idx]['text']}"
+            f"\n\nPage {get_chunks()[i]['page']}:\n"
+            f"{get_chunks()[i]['text']}"
         )
 
     return context
@@ -106,11 +112,13 @@ def search_constitution(query):
 
 def answer_question(question):
 
-    context = search_constitution(
-        question
-    )
+    try:
 
-    prompt = f"""
+        context = search_constitution(
+            question
+        )
+
+        prompt = f"""
 You are a Constitutional Law Expert.
 
 Answer ONLY from the Constitution context.
@@ -131,11 +139,29 @@ Instructions:
    'Not found in Constitution.'
 """
 
-    response = model.generate_content(
-        prompt
-    )
+        print("Calling Groq...")
+        response = client.chat.completions.create(
+        model="llama-3.3-70b-versatile",
+        messages=[
+            {
+                "role": "user",
+                "content": prompt
+            }
+        ],
+        temperature=0.2,
+        max_tokens=1200
+)
 
-    return response.text
+        return response.choices[0].message.content
+
+    except Exception as e:
+
+        print("=" * 60)
+        print("CONSTITUTION ASSISTANT ERROR")
+        traceback.print_exc()
+        print("=" * 60)
+
+        raise
 
 def answer_multiple_questions(text):
 
