@@ -92,24 +92,33 @@ const handleGoogleLogin = useGoogleLogin({
   "true"
 );
 
-const profileSaved =
-  localStorage.getItem(
-    `profileSaved_${user.email}`
-  );
+// const profileSaved =
+//   localStorage.getItem(
+//     `profileSaved_${user.email}`
+//   );
 
-if (!profileSaved) {
+// if (!profileSaved) {
 
-  // setShowProfilePrompt(true);
-  if (!userLoginResponse.data.profile_completed) {
-  setShowProfilePrompt(true);
-}
-else {
-  router.push("/");
-}
+//   // setShowProfilePrompt(true);
+//   if (!userLoginResponse.data.profile_completed) {
+//   setShowProfilePrompt(true);
+// }
+// else {
+//   router.push("/");
+// }
+
+// } else {
+
+//   router.push('/');
+
+// }
+if (userLoginResponse.data.profile_completed) {
+
+    router.push("/");
 
 } else {
 
-  router.push('/');
+    setShowProfilePrompt(true);
 
 }
 
@@ -241,40 +250,49 @@ useEffect(() => {
       console.log("LOGIN RESPONSE:", res.data);
       localStorage.setItem('userEmail', res.data.email || loginEmail);
       localStorage.setItem('userName', res.data.name || 'User');
-      localStorage.setItem(
-  `profileData_${res.data.email}`,
-  JSON.stringify({
-    name: res.data.name,
-    email: res.data.email,
-    username: res.data.name,
-    phone: "",
-    gender: "",
-    dob: "",
-    occupation: "",
-    country: "",
-    bio: ""
-  })
-);
+//       localStorage.setItem(
+//   `profileData_${res.data.email}`,
+//   JSON.stringify({
+//     name: res.data.name,
+//     email: res.data.email,
+//     username: res.data.name,
+//     phone: "",
+//     gender: "",
+//     dob: "",
+//     occupation: "",
+//     country: "",
+//     bio: ""
+//   })
+// );
       localStorage.setItem('isLoggedIn', 'true');
 
-const profileSaved =
-  localStorage.getItem(
-    `profileSaved_${res.data.email}`
-  );
+// const profileSaved =
+//   localStorage.getItem(
+//     `profileSaved_${res.data.email}`
+//   );
 
-if (!profileSaved) {
+// if (!profileSaved) {
 
-  // setShowProfilePrompt(true);
-  if (!res.data.profile_completed) {
-  setShowProfilePrompt(true);
-}
-else {
-  router.push("/");
-}
+//   // setShowProfilePrompt(true);
+//   if (!res.data.profile_completed) {
+//   setShowProfilePrompt(true);
+// }
+// else {
+//   router.push("/");
+// }
+
+// } else {
+
+//   router.push('/');
+
+// }
+if (res.data.profile_completed) {
+
+    router.push("/");
 
 } else {
 
-  router.push('/');
+    setShowProfilePrompt(true);
 
 }
     } catch (err) {

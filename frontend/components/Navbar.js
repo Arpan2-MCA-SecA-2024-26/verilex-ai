@@ -112,6 +112,7 @@ export default function Navbar() {
     localStorage.removeItem('profileData');
 
     setUserName('');
+    setProfileImage("");
 
     router.push('/');
 };

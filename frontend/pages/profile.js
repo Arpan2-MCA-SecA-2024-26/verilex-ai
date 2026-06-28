@@ -111,10 +111,14 @@ useEffect(() => {
         bio: data.bio || ""
       });
 
-      if (data.profile_picture) {
-
-        setProfileImage(data.profile_picture);
-      }
+      setProfileImage(
+          data.profile_picture || "/default-avatar.jpg"
+      );
+      
+      localStorage.setItem(
+          `profileImage_${storedEmail}`,
+          data.profile_picture || ""
+      );
       }
 
     } catch (error) {
@@ -524,11 +528,11 @@ localStorage.setItem(
   profile.email
 );
 
-// Profile completed flag
-localStorage.setItem(
-  `profileSaved_${profile.email}`,
-  "true"
-);
+// // Profile completed flag
+// localStorage.setItem(
+//   `profileSaved_${profile.email}`,
+//   "true"
+// );
 
     setDialog({
       open: true,
